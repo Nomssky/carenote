@@ -22,7 +22,7 @@ export const COLORS_LIGHT = {
 
 export const COLORS_DARK = {
   rose:       '#F4B8C2',
-  roseDark:   '#F2A7B0',
+  roseDark:   '#C96A78',
   rosePale:   '#120A10',
   blush:      '#2E1822',
   ink:        '#F5E8EC',
