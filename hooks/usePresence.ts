@@ -7,10 +7,10 @@ export function usePresence(pairId: string | null, userId: string | undefined) {
   useEffect(() => {
     if (!pairId || !userId) return
 
-    let partnerTs = 0
+    let lastTs = 0
 
     const check = () => {
-      setOnline(partnerTs > 0 && Date.now() - partnerTs < 120000)
+      setOnline(lastTs > 0 && Date.now() - lastTs < 45000)
     }
 
     const channel = supabase.channel(`room-${pairId}`)
@@ -18,12 +18,15 @@ export function usePresence(pairId: string | null, userId: string | undefined) {
     channel
       .on('presence', { event: 'sync' }, () => {
         const state = channel.presenceState()
+        let found = false
         for (const key of Object.keys(state)) {
-          if (key === userId) continue
           for (const p of (state[key] as any[]) || []) {
-            if (p.ts && p.ts > partnerTs) partnerTs = p.ts
+            if (p.user_id === userId) continue
+            found = true
+            if (p.ts && p.ts > lastTs) lastTs = p.ts
           }
         }
+        if (!found) lastTs = 0
         check()
       })
       .subscribe(async (status) => {
@@ -40,7 +43,7 @@ export function usePresence(pairId: string | null, userId: string | undefined) {
 
     return () => {
       clearInterval(refresh)
-      channel.untrack()
+      channel.untrack().catch(() => {})
       supabase.removeChannel(channel)
     }
   }, [pairId, userId])
