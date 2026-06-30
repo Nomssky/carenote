@@ -170,6 +170,7 @@ export default function MainLayout() {
   return (
     <Tabs
       screenOptions={{
+        lazy: false,
         headerShown: false,
         tabBarStyle: {
           borderTopColor: COLORS.line,
