@@ -21,7 +21,7 @@ export default function HomeScreen() {
   const insets = useSafeAreaInsets()
   const fabScale = useSharedValue(1)
   const fabAnim = useAnimatedStyle(() => ({ transform: [{ scale: fabScale.value }] }))
-  const { pair, partner, fetchPair, subscribePair } = usePairStore()
+  const { pair, partner, fetchPair, subscribePair, subscribePartner, setPartner } = usePairStore()
   const { reminders, loading, fetchTodayReminders, subscribeConfirmations, subscribeReminders } = useReminderStore()
 
   useEffect(() => { fetchPair() }, [])
@@ -42,6 +42,14 @@ export default function HomeScreen() {
 
     return () => { unsubConf(); unsubRem() }
   }, [pair])
+
+  useEffect(() => {
+    if (!partner?.id) return
+    const unsub = subscribePartner(partner.id, () => {
+      usePairStore.getState().fetchPair()
+    })
+    return unsub
+  }, [partner?.id])
 
   const myReminders = reminders.filter(r => r.target_user === profile?.id)
   const theirReminders = reminders.filter(r => r.created_by === profile?.id && r.target_user !== profile?.id)

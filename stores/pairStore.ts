@@ -10,6 +10,8 @@ type PairState = {
   createPair: () => Promise<string>
   joinPair: (code: string) => Promise<void>
   subscribePair: (onUpdate: () => void) => () => void
+  subscribePartner: (partnerId: string, onUpdate: () => void) => () => void
+  setPartner: (p: Profile) => void
   disconnectPair: () => Promise<void>
 }
 
@@ -17,6 +19,22 @@ export const usePairStore = create<PairState>((set) => ({
   pair: null,
   partner: null,
   loading: true,
+
+  setPartner: (p) => set({ partner: p }),
+
+  subscribePartner: (partnerId, onUpdate) => {
+    const channel = supabase
+      .channel('partner-profile-' + Math.random())
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'profiles',
+        filter: `id=eq.${partnerId}`,
+      }, () => onUpdate())
+      .subscribe()
+
+    return () => { supabase.removeChannel(channel) }
+  },
 
   fetchPair: async () => {
     const { data: { user } } = await supabase.auth.getUser()
