@@ -94,7 +94,7 @@ export default function HomeScreen() {
         </View>
 
         <View style={s.partnerWrap}>
-          <PartnerCard partner={partner} />
+          <PartnerCard partnerId={partner?.id} />
         </View>
 
         {myReminders.length > 0 && (

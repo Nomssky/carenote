@@ -43,9 +43,9 @@ export default function RootLayout() {
     fetchProfile()
 
     const interval = setInterval(() => {
-      const uid = useAuthStore.getState().user?.id
-      if (uid) void supabase.from('profiles').update({ last_seen: new Date().toISOString() }).eq('id', uid)
-    }, 20000)
+      const u = useAuthStore.getState().user
+      if (u?.id) void supabase.from('profiles').update({ last_seen: new Date().toISOString() }).eq('id', u.id)
+    }, 10000)
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, session) => {

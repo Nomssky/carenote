@@ -30,11 +30,7 @@ export default function MainLayout() {
       fetchPair()
       if (pairId) checkActive()
     }, 2000)
-    const hb = setInterval(() => {
-      const uid = useAuthStore.getState().user?.id
-      if (uid) void supabase.from('profiles').update({ last_seen: new Date().toISOString() }).eq('id', uid)
-    }, 20000)
-    return () => { unsub(); clearInterval(poll); clearInterval(hb) }
+    return () => { unsub(); clearInterval(poll) }
   }, [])
 
   useEffect(() => {

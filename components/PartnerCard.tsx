@@ -5,8 +5,9 @@ import { formatDistanceToNow, parseISO } from 'date-fns'
 import { id } from 'date-fns/locale'
 import { useColors } from '../hooks/useColors'
 import { FONTS } from '../constants/theme'
+import { supabase } from '../lib/supabase'
 
-type Props = { partner: Profile | null }
+type Props = { partnerId: string | undefined }
 
 function offlineText(lastSeen: string | null, now: number): string {
   if (!lastSeen) return 'Belum pernah online'
@@ -16,19 +17,31 @@ function offlineText(lastSeen: string | null, now: number): string {
   return `${formatDistanceToNow(parseISO(lastSeen), { locale: id })} yang lalu`
 }
 
-export default function PartnerCard({ partner }: Props) {
+export default function PartnerCard({ partnerId }: Props) {
   const { COLORS } = useColors()
+  const [partner, setPartner] = useState<Profile | null>(null)
   const [now, setNow] = useState(Date.now())
 
   useEffect(() => {
-    const t = setInterval(() => setNow(Date.now()), 15000)
+    if (!partnerId) return
+    const fetchProfile = async () => {
+      const { data } = await supabase.from('profiles').select('*').eq('id', partnerId).single()
+      if (data) setPartner(data)
+    }
+    fetchProfile()
+    const poll = setInterval(fetchProfile, 5000)
+    return () => clearInterval(poll)
+  }, [partnerId])
+
+  useEffect(() => {
+    const t = setInterval(() => setNow(Date.now()), 5000)
     return () => clearInterval(t)
   }, [])
 
   if (!partner) return null
 
   const diff = now - new Date(partner.last_seen ?? 0).getTime()
-  const isOnline = !!partner.last_seen && diff < 180000
+  const isOnline = !!partner.last_seen && diff < 60000
 
   return (
     <View style={[s.card, { backgroundColor: COLORS.ink }]}>
