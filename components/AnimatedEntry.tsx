@@ -1,23 +1,23 @@
 import { useEffect, type ReactNode } from 'react'
 import { useNavigation } from 'expo-router'
-import Animated, { useSharedValue, useAnimatedStyle, withSpring, withTiming, withSequence } from 'react-native-reanimated'
+import Animated, { useSharedValue, useAnimatedStyle, withTiming, Easing } from 'react-native-reanimated'
 import { useColors } from '../hooks/useColors'
+
+const EASE = Easing.out(Easing.cubic)
 
 export default function AnimatedEntry({ children }: { children: ReactNode }) {
   const { COLORS } = useColors()
   const navigation = useNavigation()
-  const translateY = useSharedValue(20)
+  const translateY = useSharedValue(16)
 
   useEffect(() => {
     if (navigation.isFocused()) {
-      translateY.value = withSpring(0, { damping: 12, stiffness: 90 })
+      translateY.value = withTiming(0, { duration: 250, easing: EASE })
     }
 
     const unsub = navigation.addListener('focus', () => {
-      translateY.value = withSequence(
-        withTiming(14, { duration: 80 }),
-        withSpring(0, { damping: 11, stiffness: 110 })
-      )
+      translateY.value = 8
+      translateY.value = withTiming(0, { duration: 180, easing: EASE })
     })
     return unsub
   }, [navigation])
