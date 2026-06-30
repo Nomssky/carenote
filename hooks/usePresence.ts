@@ -3,42 +3,27 @@ import { supabase } from '../lib/supabase'
 
 export function usePresence(pairId: string | null, userId: string | undefined) {
   const [partnerOnline, setPartnerOnline] = useState(false)
-  const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null)
 
   useEffect(() => {
     if (!pairId || !userId) return
 
-    const channel = supabase.channel(`presence-${pairId}`, {
-      config: {
-        presence: {
-          key: userId,
-        },
-      },
-    })
+    const channel = supabase.channel(`presence-${pairId}`)
 
     channel
       .on('presence', { event: 'sync' }, () => {
         const state = channel.presenceState()
-        const presentUsers = Object.keys(state).filter(k => k !== userId)
-        setPartnerOnline(presentUsers.length > 0)
-      })
-      .on('presence', { event: 'join' }, ({ key }) => {
-        if (key !== userId) setPartnerOnline(true)
-      })
-      .on('presence', { event: 'leave' }, ({ key }) => {
-        if (key !== userId) setPartnerOnline(false)
+        const others = Object.keys(state).filter(k => k !== userId)
+        setPartnerOnline(others.length > 0)
       })
       .subscribe(async (status) => {
         if (status === 'SUBSCRIBED') {
-          await channel.track({ user_id: userId, online_at: new Date().toISOString() })
+          await channel.track({ user_id: userId })
         }
       })
 
-    channelRef.current = channel
-
     const refresh = setInterval(() => {
-      channel.track({ user_id: userId, online_at: new Date().toISOString() })
-    }, 15000)
+      channel.track({ user_id: userId })
+    }, 20000)
 
     return () => {
       clearInterval(refresh)
