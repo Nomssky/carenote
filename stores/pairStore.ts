@@ -26,7 +26,8 @@ export const usePairStore = create<PairState>((set) => ({
       .from('pairs')
       .select('*')
       .or(`user_a.eq.${user.id},user_b.eq.${user.id}`)
-      .eq('status', 'active')
+      .in('status', ['active', 'pending'])
+      .order('created_at', { ascending: false })
       .limit(1)
 
     const pair = pairs?.[0] ?? null
