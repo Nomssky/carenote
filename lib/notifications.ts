@@ -1,10 +1,11 @@
 import { Platform } from 'react-native'
 import { supabase } from './supabase'
 
+const PROJECT_ID = '74d57ae6-8162-4d1f-9d74-088a2fc1df8f'
+
 let Notifications: any = null
 try {
   Notifications = require('expo-notifications')
-  const Device = require('expo-device')
 
   Notifications.setNotificationHandler({
     handleNotification: async () => ({
@@ -20,9 +21,6 @@ try {
 export async function registerForPushNotifications(): Promise<string | null> {
   if (!Notifications) return null
   try {
-    const Device = require('expo-device')
-    if (!Device.isDevice) return null
-
     const { status: existingStatus } = await Notifications.getPermissionsAsync()
     let finalStatus = existingStatus
 
@@ -42,7 +40,7 @@ export async function registerForPushNotifications(): Promise<string | null> {
       })
     }
 
-    const token = (await Notifications.getExpoPushTokenAsync()).data
+    const token = (await Notifications.getExpoPushTokenAsync({ projectId: PROJECT_ID })).data
 
     const { data: { user } } = await supabase.auth.getUser()
     if (user) {
