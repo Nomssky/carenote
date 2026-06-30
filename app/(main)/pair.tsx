@@ -21,7 +21,8 @@ export default function PairScreen() {
   useEffect(() => {
     fetchPair()
     const unsub = subscribePair(() => fetchPair())
-    return unsub
+    const poll = setInterval(() => fetchPair(), 2000)
+    return () => { unsub(); clearInterval(poll) }
   }, [])
 
   async function handleCreate() {
