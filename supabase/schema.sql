@@ -168,8 +168,7 @@ BEGIN
     RAISE EXCEPTION 'Not authenticated';
   END IF;
 
-  UPDATE pairs
-  SET status = 'inactive', user_b = NULL
+  DELETE FROM pairs
   WHERE id IN (
     SELECT id FROM pairs
     WHERE (user_a = v_user_id OR user_b = v_user_id)

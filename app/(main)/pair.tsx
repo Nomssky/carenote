@@ -1,8 +1,9 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { View, Text, TextInput, TouchableOpacity, Alert, Share, Platform, StyleSheet } from 'react-native'
-import { useRouter } from 'expo-router'
+import { useRouter, useFocusEffect } from 'expo-router'
 import { supabase } from '../../lib/supabase'
 import { usePairStore } from '../../stores/pairStore'
+import { useAuthStore } from '../../stores/authStore'
 import { FONTS, RADIUS } from '../../constants/theme'
 import { useColors } from '../../hooks/useColors'
 import RomanticBackground from '../../components/RomanticBackground'
@@ -11,23 +12,41 @@ export default function PairScreen() {
   const { COLORS, SHADOW } = useColors()
   const router = useRouter()
   const { createPair, joinPair, pair, subscribePair, fetchPair } = usePairStore()
+  const { profile } = useAuthStore()
   const [code, setCode] = useState('')
   const [myCode, setMyCode] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const pairIdRef = useRef<string | null>(null)
 
+  useFocusEffect(
+    useCallback(() => {
+      setMyCode(null)
+      pairIdRef.current = null
+      fetchPair()
+
+      const unsub = subscribePair(() => {
+        fetchPair()
+        checkActive()
+      })
+      const poll = setInterval(() => {
+        fetchPair()
+        checkActive()
+      }, 2000)
+
+      return () => { unsub(); clearInterval(poll) }
+    }, [])
+  )
+
   useEffect(() => {
-    fetchPair()
-    const unsub = subscribePair(() => {
-      fetchPair()
-      checkActive()
-    })
-    const poll = setInterval(() => {
-      fetchPair()
-      checkActive()
-    }, 2000)
-    return () => { unsub(); clearInterval(poll) }
-  }, [])
+    if (pair?.status === 'active') router.replace('/(main)/')
+  }, [pair])
+
+  useEffect(() => {
+    if (pair?.status === 'pending' && pair?.user_a === profile?.id) {
+      setMyCode(pair.pair_code)
+      pairIdRef.current = pair.id
+    }
+  }, [pair, profile])
 
   async function checkActive() {
     if (!pairIdRef.current) return
