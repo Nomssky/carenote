@@ -112,6 +112,7 @@ CREATE POLICY "confirmations_insert" ON public.confirmations
 CREATE POLICY "confirmations_update" ON public.confirmations
   FOR UPDATE USING (user_id = auth.uid());
 
+ALTER PUBLICATION supabase_realtime ADD TABLE public.profiles;
 ALTER PUBLICATION supabase_realtime ADD TABLE public.confirmations;
 ALTER PUBLICATION supabase_realtime ADD TABLE public.reminders;
 ALTER PUBLICATION supabase_realtime ADD TABLE public.pairs;

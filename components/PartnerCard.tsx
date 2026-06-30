@@ -28,7 +28,7 @@ export default function PartnerCard({ partner }: Props) {
   if (!partner) return null
 
   const diff = now - new Date(partner.last_seen ?? 0).getTime()
-  const isOnline = !!partner.last_seen && diff < 60000
+  const isOnline = !!partner.last_seen && diff < 180000
 
   return (
     <View style={[s.card, { backgroundColor: COLORS.ink }]}>
