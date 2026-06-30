@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
-import { View, Text, TouchableOpacity, StyleSheet, Animated } from 'react-native'
+import { View, Text, TouchableOpacity, Alert, StyleSheet, Animated, Platform } from 'react-native'
 import { useLocalSearchParams, useRouter } from 'expo-router'
+import * as ImagePicker from 'expo-image-picker'
+import { supabase } from '../../lib/supabase'
 import { useReminderStore } from '../../stores/reminderStore'
 import { FONTS } from '../../constants/theme'
 import { useColors } from '../../hooks/useColors'
@@ -12,7 +14,8 @@ export default function NotifScreen() {
   const router = useRouter()
   const params = useLocalSearchParams<{ reminder_id: string }>()
   const { reminders, confirm } = useReminderStore()
-  const [loading, setLoading] = useState<'done' | 'skip' | null>(null)
+  const [loading, setLoading] = useState<'camera' | 'done' | 'skip' | null>(null)
+  const [photo, setPhoto] = useState<string | null>(null)
   const fadeAnim = useState(new Animated.Value(0))[0]
 
   const reminder = reminders.find(r => r.id === params.reminder_id) ?? reminders[0]
@@ -21,6 +24,43 @@ export default function NotifScreen() {
   useEffect(() => {
     Animated.timing(fadeAnim, { toValue: 1, duration: 350, useNativeDriver: true }).start()
   }, [])
+
+  async function handleCamera() {
+    try {
+      const { granted } = await ImagePicker.requestCameraPermissionsAsync()
+      if (!granted) {
+        Alert.alert('Izin Ditolak', 'Aktifkan akses kamera di pengaturan HP untuk mengirim bukti foto.')
+        return
+      }
+      const result = await ImagePicker.launchCameraAsync({
+        quality: 0.7,
+        allowsEditing: true,
+      })
+      if (result.canceled) return
+
+      setLoading('camera')
+      const uri = result.assets[0].uri
+      const response = await fetch(uri)
+      const blob = await response.blob()
+
+      const path = `proofs/${reminder.id}_${Date.now()}.jpg`
+      const { error: uploadErr } = await supabase.storage
+        .from('proofs')
+        .upload(path, blob, { contentType: 'image/jpeg' })
+
+      if (uploadErr) throw uploadErr
+
+      const { data: urlData } = supabase.storage.from('proofs').getPublicUrl(path)
+      setPhoto(urlData.publicUrl)
+
+      await confirm(reminder.id, 'done', undefined, urlData.publicUrl)
+      setLoading(null)
+      router.back()
+    } catch (e: any) {
+      Alert.alert('Error', e.message)
+      setLoading(null)
+    }
+  }
 
   async function handleConfirm(status: 'done' | 'skip') {
     if (!reminder) return
@@ -50,6 +90,17 @@ export default function NotifScreen() {
       <Text style={[s.time, { color: COLORS.muted }]}>Barusan · {timeStr}</Text>
 
       <View style={s.actions}>
+        <TouchableOpacity
+          style={[s.btnCamera, { backgroundColor: '#1C1018' }, SHADOW.button, loading === 'camera' && { opacity: 0.7 }]}
+          onPress={handleCamera}
+          disabled={!!loading}
+          activeOpacity={0.85}
+        >
+          <Text style={s.btnCameraText}>
+            {loading === 'camera' ? 'Mengunggah...' : '📸 Foto Bukti'}
+          </Text>
+        </TouchableOpacity>
+
         <TouchableOpacity
           style={[s.btnPrimary, { backgroundColor: COLORS.roseDark }, SHADOW.button, loading === 'done' && { opacity: 0.7 }]}
           onPress={() => handleConfirm('done')}
@@ -87,6 +138,9 @@ const s = StyleSheet.create({
                       textAlign: 'center', lineHeight: 36, marginBottom: 8 },
   time:             { fontFamily: FONTS.sans, fontSize: 12, marginBottom: 40 },
   actions:          { width: '100%', gap: 12 },
+  btnCamera:        { borderRadius: 16,
+                      paddingVertical: 16, alignItems: 'center' },
+  btnCameraText:    { fontFamily: FONTS.sansBold, fontSize: 15, color: '#fff' },
   btnPrimary:       { borderRadius: 16,
                       paddingVertical: 16, alignItems: 'center' },
   btnPrimaryText:   { fontFamily: FONTS.sansBold, fontSize: 15, color: '#fff' },
