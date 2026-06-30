@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { Slot, useRouter, useSegments } from 'expo-router'
+import { Stack, useRouter, useSegments } from 'expo-router'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { supabase } from '../lib/supabase'
 import { useAuthStore } from '../stores/authStore'
@@ -92,7 +92,7 @@ export default function RootLayout() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <Slot />
+      <Stack screenOptions={{ headerShown: false, animation: 'fade', animationDuration: 300 }} />
       <TimePickerModal />
     </GestureHandlerRootView>
   )

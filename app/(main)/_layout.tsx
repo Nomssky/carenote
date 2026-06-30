@@ -2,12 +2,41 @@ import { useEffect, useState } from 'react'
 import { Tabs } from 'expo-router'
 import { View, Text, TextInput, TouchableOpacity, Alert, Share, Platform, StyleSheet } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated'
 import { supabase } from '../../lib/supabase'
 import { useColors } from '../../hooks/useColors'
 import { usePairStore } from '../../stores/pairStore'
 import { useAuthStore } from '../../stores/authStore'
 import { FONTS, RADIUS } from '../../constants/theme'
 import RomanticBackground from '../../components/RomanticBackground'
+
+function TabIcon({ emoji, focused }: { emoji: string; focused: boolean }) {
+  const scale = useSharedValue(focused ? 1 : 0.85)
+
+  useEffect(() => {
+    scale.value = withSpring(focused ? 1 : 0.85, { damping: 6, stiffness: 140, mass: 0.5 })
+  }, [focused])
+
+  const animStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }))
+
+  const translateY = useSharedValue(focused ? -2 : 0)
+
+  useEffect(() => {
+    translateY.value = withSpring(focused ? -2 : 0, { damping: 6, stiffness: 140, mass: 0.5 })
+  }, [focused])
+
+  const yStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: translateY.value }],
+  }))
+
+  return (
+    <Animated.View style={[animStyle, yStyle]}>
+      <Text style={{ fontSize: 22 }}>{emoji}</Text>
+    </Animated.View>
+  )
+}
 
 export default function MainLayout() {
   const { COLORS, SHADOW } = useColors()
@@ -169,35 +198,35 @@ export default function MainLayout() {
         name="index"
         options={{
           title: 'Home',
-          tabBarIcon: ({ color }) => <Text style={{ fontSize: 20, color }}>🏠</Text>,
+          tabBarIcon: ({ focused }) => <TabIcon emoji="🏠" focused={focused} />,
         }}
       />
       <Tabs.Screen
         name="create"
         options={{
           title: 'Buat',
-          tabBarIcon: ({ color }) => <Text style={{ fontSize: 20, color }}>➕</Text>,
+          tabBarIcon: ({ focused }) => <TabIcon emoji="➕" focused={focused} />,
         }}
       />
       <Tabs.Screen
         name="history"
         options={{
           title: 'Riwayat',
-          tabBarIcon: ({ color }) => <Text style={{ fontSize: 20, color }}>📋</Text>,
+          tabBarIcon: ({ focused }) => <TabIcon emoji="📋" focused={focused} />,
         }}
       />
       <Tabs.Screen
         name="gallery"
         options={{
           title: 'Galeri',
-          tabBarIcon: ({ color }) => <Text style={{ fontSize: 20, color }}>🖼</Text>,
+          tabBarIcon: ({ focused }) => <TabIcon emoji="🖼" focused={focused} />,
         }}
       />
       <Tabs.Screen
         name="settings"
         options={{
           title: 'Setelan',
-          tabBarIcon: ({ color }) => <Text style={{ fontSize: 20, color }}>⚙️</Text>,
+          tabBarIcon: ({ focused }) => <TabIcon emoji="⚙️" focused={focused} />,
         }}
       />
       <Tabs.Screen

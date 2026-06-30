@@ -10,6 +10,7 @@ import TimePicker from '../../components/TimePicker'
 import { REMINDER_PRESETS } from '../../constants/reminders'
 import { FONTS, SPACING } from '../../constants/theme'
 import { useColors } from '../../hooks/useColors'
+import AnimatedEntry from '../../components/AnimatedEntry'
 import RomanticBackground from '../../components/RomanticBackground'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import type { ReminderType } from '../../types'
@@ -68,84 +69,86 @@ export default function CreateScreen() {
   }
 
   return (
-    <View style={[s.root, { backgroundColor: COLORS.rosePale }]}>
-      <RomanticBackground />
-      <ScrollView showsVerticalScrollIndicator={false}>
-        <View style={[s.header, { paddingTop: insets.top + 32 }]}>
-          <TouchableOpacity style={[s.backBtn, { borderColor: COLORS.line }]} onPress={() => router.back()}>
-            <Text style={{ color: COLORS.ink, fontSize: 16 }}>←</Text>
-          </TouchableOpacity>
-          <Text style={[s.title, { color: COLORS.ink }]}>Reminder Baru</Text>
-        </View>
-
-        {partner && (
-          <View style={[s.banner, { backgroundColor: COLORS.blush }]}>
-            <Text style={{ fontSize: 16 }}>💌</Text>
-            <Text style={[s.bannerText, { color: COLORS.ink }]}>
-              Akan dikirim ke <Text style={s.bannerBold}>{partner.name}</Text>
-            </Text>
+    <AnimatedEntry>
+      <View style={[s.root, { backgroundColor: COLORS.rosePale }]}>
+        <RomanticBackground />
+        <ScrollView showsVerticalScrollIndicator={false}>
+          <View style={[s.header, { paddingTop: insets.top + 32 }]}>
+            <TouchableOpacity style={[s.backBtn, { borderColor: COLORS.line }]} onPress={() => router.back()}>
+              <Text style={{ color: COLORS.ink, fontSize: 16 }}>←</Text>
+            </TouchableOpacity>
+            <Text style={[s.title, { color: COLORS.ink }]}>Reminder Baru</Text>
           </View>
-        )}
 
-        <Text style={[s.sectionLabel, { color: COLORS.muted }]}>Jenis</Text>
-        <View style={s.typeGrid}>
-          {REMINDER_PRESETS.map(p => (
-            <TypeChip
-              key={p.type}
-              label={p.label}
-              emoji={p.emoji}
-              color={p.color}
-              selected={type === p.type}
-              onPress={() => handleSelectType(p.type)}
+          {partner && (
+            <View style={[s.banner, { backgroundColor: COLORS.blush }]}>
+              <Text style={{ fontSize: 16 }}>💌</Text>
+              <Text style={[s.bannerText, { color: COLORS.ink }]}>
+                Akan dikirim ke <Text style={s.bannerBold}>{partner.name}</Text>
+              </Text>
+            </View>
+          )}
+
+          <Text style={[s.sectionLabel, { color: COLORS.muted }]}>Jenis</Text>
+          <View style={s.typeGrid}>
+            {REMINDER_PRESETS.map(p => (
+              <TypeChip
+                key={p.type}
+                label={p.label}
+                emoji={p.emoji}
+                color={p.color}
+                selected={type === p.type}
+                onPress={() => handleSelectType(p.type)}
+              />
+            ))}
+          </View>
+
+          <Text style={[s.sectionLabel, { color: COLORS.muted }]}>Pesan</Text>
+          <View style={s.fieldWrap}>
+            <TextInput
+              style={[s.input, { backgroundColor: COLORS.white, borderColor: COLORS.line, color: COLORS.ink }, focused === 'msg' && { borderColor: COLORS.roseDark }]}
+              value={message}
+              onChangeText={setMessage}
+              placeholder="Tulis pesan untuk dia..."
+              placeholderTextColor={COLORS.muted}
+              multiline
+              maxLength={100}
+              onFocus={() => setFocused('msg')}
+              onBlur={() => setFocused(null)}
             />
-          ))}
+            <Text style={[s.counter, { color: COLORS.muted }]}>{message.length}/100</Text>
+          </View>
+
+          <Text style={[s.sectionLabel, { color: COLORS.muted }]}>Jam</Text>
+          <View style={s.fieldWrap}>
+            <TimePicker
+              value={time}
+              onChange={setTime}
+            />
+          </View>
+
+          <Text style={[s.sectionLabel, { color: COLORS.muted }]}>Hari</Text>
+          <View style={s.fieldWrap}>
+            <DayPicker selected={days} onChange={setDays} />
+          </View>
+
+          <View style={{ height: 120 }} />
+        </ScrollView>
+
+        <View style={[s.footer, { borderTopColor: COLORS.line, backgroundColor: COLORS.rosePale }]}>
+          <TouchableOpacity
+            style={[s.submitBtn, { backgroundColor: COLORS.roseDark }, SHADOW.button, loading && { opacity: 0.7 }]}
+            onPress={handleSubmit}
+            disabled={loading}
+            activeOpacity={0.85}
+          >
+            <Text style={s.submitText}>
+              {loading ? 'Mengirim...' : `${preset?.emoji ?? '💌'} Kirim ke ${partner?.name ?? 'Dia'}`}
+            </Text>
+          </TouchableOpacity>
         </View>
-
-        <Text style={[s.sectionLabel, { color: COLORS.muted }]}>Pesan</Text>
-        <View style={s.fieldWrap}>
-          <TextInput
-            style={[s.input, { backgroundColor: COLORS.white, borderColor: COLORS.line, color: COLORS.ink }, focused === 'msg' && { borderColor: COLORS.roseDark }]}
-            value={message}
-            onChangeText={setMessage}
-            placeholder="Tulis pesan untuk dia..."
-            placeholderTextColor={COLORS.muted}
-            multiline
-            maxLength={100}
-            onFocus={() => setFocused('msg')}
-            onBlur={() => setFocused(null)}
-          />
-          <Text style={[s.counter, { color: COLORS.muted }]}>{message.length}/100</Text>
-        </View>
-
-        <Text style={[s.sectionLabel, { color: COLORS.muted }]}>Jam</Text>
-        <View style={s.fieldWrap}>
-          <TimePicker
-            value={time}
-            onChange={setTime}
-          />
-        </View>
-
-        <Text style={[s.sectionLabel, { color: COLORS.muted }]}>Hari</Text>
-        <View style={s.fieldWrap}>
-          <DayPicker selected={days} onChange={setDays} />
-        </View>
-
-        <View style={{ height: 120 }} />
-      </ScrollView>
-
-      <View style={[s.footer, { borderTopColor: COLORS.line, backgroundColor: COLORS.rosePale }]}>
-        <TouchableOpacity
-          style={[s.submitBtn, { backgroundColor: COLORS.roseDark }, SHADOW.button, loading && { opacity: 0.7 }]}
-          onPress={handleSubmit}
-          disabled={loading}
-          activeOpacity={0.85}
-        >
-          <Text style={s.submitText}>
-            {loading ? 'Mengirim...' : `${preset?.emoji ?? '💌'} Kirim ke ${partner?.name ?? 'Dia'}`}
-          </Text>
-        </TouchableOpacity>
       </View>
-    </View>
+    </AnimatedEntry>
   )
 }
 

@@ -7,6 +7,7 @@ import { useReminderStore } from '../../stores/reminderStore'
 
 import ReminderCard from '../../components/ReminderCard'
 import PartnerCard from '../../components/PartnerCard'
+import AnimatedEntry from '../../components/AnimatedEntry'
 import { useRouter } from 'expo-router'
 import { formatDate } from '../../lib/utils'
 import { FONTS, SPACING } from '../../constants/theme'
@@ -48,86 +49,90 @@ export default function HomeScreen() {
 
   if (!pair) {
     return (
-      <View style={[s.emptyRoot, { backgroundColor: COLORS.rosePale }]}>
-        <RomanticBackground />
-        <Text style={{ fontSize: 60, marginBottom: 16 }}>💌</Text>
-        <Text style={[s.emptyTitle, { color: COLORS.ink }]}>Belum terhubung</Text>
-        <Text style={[s.emptySub, { color: COLORS.muted }]}>Hubungkan dulu dengan dia untuk mulai saling ngingetin</Text>
-        <TouchableOpacity style={[s.emptyBtn, { backgroundColor: COLORS.roseDark }]} onPress={() => router.push('/(main)/pair')}>
-          <Text style={s.emptyBtnText}>Hubungkan Sekarang</Text>
-        </TouchableOpacity>
-      </View>
+      <AnimatedEntry>
+        <View style={[s.emptyRoot, { backgroundColor: COLORS.rosePale }]}>
+          <RomanticBackground />
+          <Text style={{ fontSize: 60, marginBottom: 16 }}>💌</Text>
+          <Text style={[s.emptyTitle, { color: COLORS.ink }]}>Belum terhubung</Text>
+          <Text style={[s.emptySub, { color: COLORS.muted }]}>Hubungkan dulu dengan dia untuk mulai saling ngingetin</Text>
+          <TouchableOpacity style={[s.emptyBtn, { backgroundColor: COLORS.roseDark }]} onPress={() => router.push('/(main)/pair')}>
+            <Text style={s.emptyBtnText}>Hubungkan Sekarang</Text>
+          </TouchableOpacity>
+        </View>
+      </AnimatedEntry>
     )
   }
 
   return (
-    <View style={[s.root, { backgroundColor: COLORS.rosePale }]}>
-      <RomanticBackground />
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl
-            refreshing={loading}
-            onRefresh={() => pair && fetchTodayReminders(pair.id)}
-            tintColor={COLORS.roseDark}
-          />
-        }
-      >
-        <View style={[s.header, { paddingTop: insets.top + 32 }]}>
-          <View style={{ flex: 1 }}>
-            <Text style={[s.greeting, { color: COLORS.ink }]}>
-              Halo, <Text style={[s.greetingName, { color: COLORS.roseDark }]}>{profile?.name}</Text> 👋
-            </Text>
-            <Text style={[s.greetingSub, { color: COLORS.muted }]}>{formatDate(new Date().toISOString())} · {reminders.length} reminder hari ini</Text>
-          </View>
-          <View style={[s.avatar, { backgroundColor: COLORS.blush, borderColor: COLORS.line }]}>
-            <Text style={{ fontSize: 20 }}>🧑‍💻</Text>
-          </View>
-        </View>
-
-        <View style={s.partnerWrap}>
-          <PartnerCard partnerId={partner?.id} />
-        </View>
-
-        {myReminders.length > 0 && (
-          <>
-            <Text style={[s.sectionLabel, { color: COLORS.muted }]}>Dari Dia Buat Kamu</Text>
-            <View style={s.cardList}>
-              {myReminders.map((r, i) => <ReminderCard key={r.id} reminder={r} isOwn={false} index={i} />)}
-            </View>
-          </>
-        )}
-
-        {theirReminders.length > 0 && (
-          <>
-            <Text style={[s.sectionLabel, { color: COLORS.muted }]}>Yang Kamu Buat Buat Dia</Text>
-            <View style={s.cardList}>
-              {theirReminders.map((r, i) => <ReminderCard key={r.id} reminder={r} isOwn={true} index={i} />)}
-            </View>
-          </>
-        )}
-
-        {reminders.length === 0 && !loading && (
-          <View style={s.empty}>
-            <Text style={{ fontSize: 48, marginBottom: 12 }}>🗓</Text>
-            <Text style={[s.emptyText, { color: COLORS.muted }]}>Belum ada reminder hari ini.{'\n'}Tap + untuk buat yang pertama!</Text>
-          </View>
-        )}
-
-        <View style={{ height: 96 }} />
-      </ScrollView>
-
-      <Animated.View style={[s.fab, { backgroundColor: COLORS.roseDark }, SHADOW.fab, fabAnim]}>
-        <TouchableOpacity
-          onPress={() => router.push('/(main)/create')}
-          onPressIn={() => { fabScale.value = withSpring(0.88) }}
-          onPressOut={() => { fabScale.value = withSpring(1) }}
-          style={{ width: 52, height: 52, alignItems: 'center', justifyContent: 'center' }}
+    <AnimatedEntry>
+      <View style={[s.root, { backgroundColor: COLORS.rosePale }]}>
+        <RomanticBackground />
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={loading}
+              onRefresh={() => pair && fetchTodayReminders(pair.id)}
+              tintColor={COLORS.roseDark}
+            />
+          }
         >
-          <Text style={{ color: '#fff', fontSize: 28, lineHeight: 32 }}>+</Text>
-        </TouchableOpacity>
-      </Animated.View>
-    </View>
+          <View style={[s.header, { paddingTop: insets.top + 32 }]}>
+            <View style={{ flex: 1 }}>
+              <Text style={[s.greeting, { color: COLORS.ink }]}>
+                Halo, <Text style={[s.greetingName, { color: COLORS.roseDark }]}>{profile?.name}</Text> 👋
+              </Text>
+              <Text style={[s.greetingSub, { color: COLORS.muted }]}>{formatDate(new Date().toISOString())} · {reminders.length} reminder hari ini</Text>
+            </View>
+            <View style={[s.avatar, { backgroundColor: COLORS.blush, borderColor: COLORS.line }]}>
+              <Text style={{ fontSize: 20 }}>🧑‍💻</Text>
+            </View>
+          </View>
+
+          <View style={s.partnerWrap}>
+            <PartnerCard partnerId={partner?.id} />
+          </View>
+
+          {myReminders.length > 0 && (
+            <>
+              <Text style={[s.sectionLabel, { color: COLORS.muted }]}>Dari Dia Buat Kamu</Text>
+              <View style={s.cardList}>
+                {myReminders.map((r, i) => <ReminderCard key={r.id} reminder={r} isOwn={false} index={i} />)}
+              </View>
+            </>
+          )}
+
+          {theirReminders.length > 0 && (
+            <>
+              <Text style={[s.sectionLabel, { color: COLORS.muted }]}>Yang Kamu Buat Buat Dia</Text>
+              <View style={s.cardList}>
+                {theirReminders.map((r, i) => <ReminderCard key={r.id} reminder={r} isOwn={true} index={i} />)}
+              </View>
+            </>
+          )}
+
+          {reminders.length === 0 && !loading && (
+            <View style={s.empty}>
+              <Text style={{ fontSize: 48, marginBottom: 12 }}>🗓</Text>
+              <Text style={[s.emptyText, { color: COLORS.muted }]}>Belum ada reminder hari ini.{'\n'}Tap + untuk buat yang pertama!</Text>
+            </View>
+          )}
+
+          <View style={{ height: 96 }} />
+        </ScrollView>
+
+        <Animated.View style={[s.fab, { backgroundColor: COLORS.roseDark }, SHADOW.fab, fabAnim]}>
+          <TouchableOpacity
+            onPress={() => router.push('/(main)/create')}
+            onPressIn={() => { fabScale.value = withSpring(0.88) }}
+            onPressOut={() => { fabScale.value = withSpring(1) }}
+            style={{ width: 52, height: 52, alignItems: 'center', justifyContent: 'center' }}
+          >
+            <Text style={{ color: '#fff', fontSize: 28, lineHeight: 32 }}>+</Text>
+          </TouchableOpacity>
+        </Animated.View>
+      </View>
+    </AnimatedEntry>
   )
 }
 

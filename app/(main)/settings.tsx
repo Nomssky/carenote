@@ -6,6 +6,7 @@ import { supabase } from '../../lib/supabase'
 import { useRouter } from 'expo-router'
 import { FONTS, SPACING, RADIUS } from '../../constants/theme'
 import { useColors } from '../../hooks/useColors'
+import AnimatedEntry from '../../components/AnimatedEntry'
 import RomanticBackground from '../../components/RomanticBackground'
 import { useThemeStore } from '../../stores/themeStore'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -67,95 +68,97 @@ export default function SettingsScreen() {
   }
 
   return (
-    <View style={[s.root, { backgroundColor: COLORS.rosePale }]}>
-      <RomanticBackground />
-      <View style={[s.header, { paddingTop: insets.top + 32 }]}>
-        <Text style={[s.title, { color: COLORS.ink }]}>Setelan</Text>
-      </View>
+    <AnimatedEntry>
+      <View style={[s.root, { backgroundColor: COLORS.rosePale }]}>
+        <RomanticBackground />
+        <View style={[s.header, { paddingTop: insets.top + 32 }]}>
+          <Text style={[s.title, { color: COLORS.ink }]}>Setelan</Text>
+        </View>
 
-      <View style={s.section}>
-        <Text style={[s.sectionLabel, { color: COLORS.muted }]}>Profil</Text>
-        <TouchableOpacity style={[s.card, { backgroundColor: COLORS.white, borderColor: COLORS.line }]} onPress={openEdit} activeOpacity={0.7}>
-          <Text style={[s.cardLabel, { color: COLORS.muted }]}>Nama</Text>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Text style={[s.cardValue, { color: COLORS.ink }]}>{profile?.name ?? '-'}</Text>
-            <Text style={{ color: COLORS.muted, fontSize: 14 }}>✎</Text>
-          </View>
-        </TouchableOpacity>
-      </View>
+        <View style={s.section}>
+          <Text style={[s.sectionLabel, { color: COLORS.muted }]}>Profil</Text>
+          <TouchableOpacity style={[s.card, { backgroundColor: COLORS.white, borderColor: COLORS.line }]} onPress={openEdit} activeOpacity={0.7}>
+            <Text style={[s.cardLabel, { color: COLORS.muted }]}>Nama</Text>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Text style={[s.cardValue, { color: COLORS.ink }]}>{profile?.name ?? '-'}</Text>
+              <Text style={{ color: COLORS.muted, fontSize: 14 }}>✎</Text>
+            </View>
+          </TouchableOpacity>
+        </View>
 
-      <View style={s.section}>
-        <Text style={[s.sectionLabel, { color: COLORS.muted }]}>Tampilan</Text>
-        <TouchableOpacity
-          style={[s.card, { backgroundColor: COLORS.white, borderColor: COLORS.line, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }]}
-          onPress={toggleTheme}
-          activeOpacity={0.7}
-        >
-          <Text style={[s.cardLabel, { color: COLORS.muted }]}>Mode Gelap</Text>
-          <View style={{
-            width: 48, height: 28, borderRadius: 14,
-            backgroundColor: theme === 'dark' ? COLORS.roseDark : COLORS.line,
-            justifyContent: 'center', paddingHorizontal: 3,
-          }}>
+        <View style={s.section}>
+          <Text style={[s.sectionLabel, { color: COLORS.muted }]}>Tampilan</Text>
+          <TouchableOpacity
+            style={[s.card, { backgroundColor: COLORS.white, borderColor: COLORS.line, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }]}
+            onPress={toggleTheme}
+            activeOpacity={0.7}
+          >
+            <Text style={[s.cardLabel, { color: COLORS.muted }]}>Mode Gelap</Text>
             <View style={{
-              width: 22, height: 22, borderRadius: 11,
-              backgroundColor: COLORS.white,
-              alignSelf: theme === 'dark' ? 'flex-end' : 'flex-start',
-            }} />
+              width: 48, height: 28, borderRadius: 14,
+              backgroundColor: theme === 'dark' ? COLORS.roseDark : COLORS.line,
+              justifyContent: 'center', paddingHorizontal: 3,
+            }}>
+              <View style={{
+                width: 22, height: 22, borderRadius: 11,
+                backgroundColor: COLORS.white,
+                alignSelf: theme === 'dark' ? 'flex-end' : 'flex-start',
+              }} />
+            </View>
+          </TouchableOpacity>
+        </View>
+
+        <View style={s.section}>
+          <Text style={[s.sectionLabel, { color: COLORS.muted }]}>Pasangan</Text>
+          <View style={[s.card, { backgroundColor: COLORS.white, borderColor: COLORS.line }]}>
+            <Text style={[s.cardLabel, { color: COLORS.muted }]}>Nama</Text>
+            <Text style={[s.cardValue, { color: COLORS.ink }]}>{partner?.name ?? '-'}</Text>
           </View>
+          {pair && (
+            <>
+              <View style={[s.card, { backgroundColor: COLORS.white, borderColor: COLORS.line }]}>
+                <Text style={[s.cardLabel, { color: COLORS.muted }]}>Kode Pairing</Text>
+                <Text style={[s.cardValue, { color: COLORS.ink }]}>{pair.pair_code}</Text>
+              </View>
+              <TouchableOpacity style={[s.dangerBtn, { borderColor: COLORS.roseDark }]} onPress={handleDisconnect}>
+                <Text style={[s.dangerBtnText, { color: COLORS.roseDark }]}>Putus dari Pasangan</Text>
+              </TouchableOpacity>
+            </>
+          )}
+        </View>
+
+        <Modal visible={editOpen} transparent animationType="fade">
+          <View style={s.modalOverlay}>
+            <View style={[s.modalBox, { backgroundColor: COLORS.white }]}>
+              <Text style={[s.modalTitle, { color: COLORS.ink }]}>Edit Nama</Text>
+              <TextInput
+                style={[s.modalInput, { backgroundColor: COLORS.white, borderColor: COLORS.line, color: COLORS.ink }]}
+                value={editName}
+                onChangeText={setEditName}
+                placeholder="Nama kamu"
+                placeholderTextColor={COLORS.muted}
+                autoFocus
+              />
+              <View style={s.modalRow}>
+                <TouchableOpacity style={[s.modalCancel, { borderColor: COLORS.line }]} onPress={() => setEditOpen(false)}>
+                  <Text style={[s.modalCancelText, { color: COLORS.muted }]}>Batal</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={[s.modalSave, { backgroundColor: COLORS.roseDark }, saving && { opacity: 0.7 }]} onPress={saveName} disabled={saving}>
+                  <Text style={s.modalSaveText}>{saving ? 'Menyimpan...' : 'Simpan'}</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
+
+        <View style={{ flex: 1 }} />
+        <TouchableOpacity style={[s.logoutBtn, { borderColor: COLORS.roseDark }]} onPress={handleSignOut}>
+          <Text style={[s.logoutText, { color: COLORS.roseDark }]}>Keluar</Text>
         </TouchableOpacity>
+
+        <View style={{ height: 40 }} />
       </View>
-
-      <View style={s.section}>
-        <Text style={[s.sectionLabel, { color: COLORS.muted }]}>Pasangan</Text>
-        <View style={[s.card, { backgroundColor: COLORS.white, borderColor: COLORS.line }]}>
-          <Text style={[s.cardLabel, { color: COLORS.muted }]}>Nama</Text>
-          <Text style={[s.cardValue, { color: COLORS.ink }]}>{partner?.name ?? '-'}</Text>
-        </View>
-        {pair && (
-          <>
-            <View style={[s.card, { backgroundColor: COLORS.white, borderColor: COLORS.line }]}>
-              <Text style={[s.cardLabel, { color: COLORS.muted }]}>Kode Pairing</Text>
-              <Text style={[s.cardValue, { color: COLORS.ink }]}>{pair.pair_code}</Text>
-            </View>
-            <TouchableOpacity style={[s.dangerBtn, { borderColor: COLORS.roseDark }]} onPress={handleDisconnect}>
-              <Text style={[s.dangerBtnText, { color: COLORS.roseDark }]}>Putus dari Pasangan</Text>
-            </TouchableOpacity>
-          </>
-        )}
-      </View>
-
-      <Modal visible={editOpen} transparent animationType="fade">
-        <View style={s.modalOverlay}>
-          <View style={[s.modalBox, { backgroundColor: COLORS.white }]}>
-            <Text style={[s.modalTitle, { color: COLORS.ink }]}>Edit Nama</Text>
-            <TextInput
-              style={[s.modalInput, { backgroundColor: COLORS.white, borderColor: COLORS.line, color: COLORS.ink }]}
-              value={editName}
-              onChangeText={setEditName}
-              placeholder="Nama kamu"
-              placeholderTextColor={COLORS.muted}
-              autoFocus
-            />
-            <View style={s.modalRow}>
-              <TouchableOpacity style={[s.modalCancel, { borderColor: COLORS.line }]} onPress={() => setEditOpen(false)}>
-                <Text style={[s.modalCancelText, { color: COLORS.muted }]}>Batal</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={[s.modalSave, { backgroundColor: COLORS.roseDark }, saving && { opacity: 0.7 }]} onPress={saveName} disabled={saving}>
-                <Text style={s.modalSaveText}>{saving ? 'Menyimpan...' : 'Simpan'}</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
-
-      <View style={{ flex: 1 }} />
-      <TouchableOpacity style={[s.logoutBtn, { borderColor: COLORS.roseDark }]} onPress={handleSignOut}>
-        <Text style={[s.logoutText, { color: COLORS.roseDark }]}>Keluar</Text>
-      </TouchableOpacity>
-
-      <View style={{ height: 40 }} />
-    </View>
+    </AnimatedEntry>
   )
 }
 

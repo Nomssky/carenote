@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router'
 import { supabase } from '../../lib/supabase'
 import { FONTS, RADIUS } from '../../constants/theme'
 import { useColors } from '../../hooks/useColors'
+import AnimatedEntry from '../../components/AnimatedEntry'
 import RomanticBackground from '../../components/RomanticBackground'
 
 export default function LoginScreen() {
@@ -26,54 +27,56 @@ export default function LoginScreen() {
   }
 
   return (
-    <KeyboardAvoidingView
-      style={[s.root, { backgroundColor: COLORS.rosePale }]}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
-      <RomanticBackground />
-      <View style={s.container}>
-        <Text style={[s.heading, { color: COLORS.ink }]}>Halo 👋</Text>
-        <Text style={[s.subheading, { color: COLORS.muted }]}>Masuk untuk terhubung dengan dia</Text>
+    <AnimatedEntry>
+      <KeyboardAvoidingView
+        style={[s.root, { backgroundColor: COLORS.rosePale }]}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        <RomanticBackground />
+        <View style={s.container}>
+          <Text style={[s.heading, { color: COLORS.ink }]}>Halo 👋</Text>
+          <Text style={[s.subheading, { color: COLORS.muted }]}>Masuk untuk terhubung dengan dia</Text>
 
-        <TextInput
-          style={[s.input, { backgroundColor: COLORS.white, borderColor: COLORS.line, color: COLORS.ink }]}
-          placeholder="Email"
-          placeholderTextColor={COLORS.muted}
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-          autoCapitalize="none"
-        />
-        <TextInput
-          style={[s.input, { backgroundColor: COLORS.white, borderColor: COLORS.line, color: COLORS.ink }]}
-          placeholder="Password"
-          placeholderTextColor={COLORS.muted}
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-        />
+          <TextInput
+            style={[s.input, { backgroundColor: COLORS.white, borderColor: COLORS.line, color: COLORS.ink }]}
+            placeholder="Email"
+            placeholderTextColor={COLORS.muted}
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+          />
+          <TextInput
+            style={[s.input, { backgroundColor: COLORS.white, borderColor: COLORS.line, color: COLORS.ink }]}
+            placeholder="Password"
+            placeholderTextColor={COLORS.muted}
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+          />
 
-        <TouchableOpacity
-          style={[s.button, { backgroundColor: COLORS.roseDark }, SHADOW.button, loading && { opacity: 0.7 }]}
-          onPress={handleLogin}
-          disabled={loading}
-          activeOpacity={0.85}
-        >
-          <Text style={s.buttonText}>
-            {loading ? 'Masuk...' : 'Masuk'}
-          </Text>
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={[s.button, { backgroundColor: COLORS.roseDark }, SHADOW.button, loading && { opacity: 0.7 }]}
+            onPress={handleLogin}
+            disabled={loading}
+            activeOpacity={0.85}
+          >
+            <Text style={s.buttonText}>
+              {loading ? 'Masuk...' : 'Masuk'}
+            </Text>
+          </TouchableOpacity>
 
-        <TouchableOpacity
-          style={s.linkWrap}
-          onPress={() => router.push('/(auth)/register')}
-        >
-          <Text style={[s.linkText, { color: COLORS.muted }]}>
-            Belum punya akun? <Text style={[s.linkBold, { color: COLORS.roseDark }]}>Daftar</Text>
-          </Text>
-        </TouchableOpacity>
-      </View>
-    </KeyboardAvoidingView>
+          <TouchableOpacity
+            style={s.linkWrap}
+            onPress={() => router.push('/(auth)/register')}
+          >
+            <Text style={[s.linkText, { color: COLORS.muted }]}>
+              Belum punya akun? <Text style={[s.linkBold, { color: COLORS.roseDark }]}>Daftar</Text>
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </KeyboardAvoidingView>
+    </AnimatedEntry>
   )
 }
 
