@@ -1,0 +1,72 @@
+{
+  "expo": {
+    "name": "CareNote",
+    "slug": "carenote",
+    "version": "1.0.0",
+    "scheme": "carenote",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "icon": "./assets/icon.png",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#FDF0F2"
+    },
+    "platforms": [
+      "ios",
+      "android",
+      "web"
+    ],
+    "plugins": [
+      "expo-router",
+      "expo-splash-screen",
+      [
+        "expo-image-picker",
+        {
+          "cameraPermission": "CareNote butuh akses kamera buat ngambil foto bukti reminder."
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/android-icon-foreground.png"
+        }
+      ]
+    ],
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundColor": "#FDF0F2"
+      },
+      "package": "com.carenote.app",
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.POST_NOTIFICATIONS",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.CAMERA",
+        "android.permission.POST_NOTIFICATIONS",
+        "android.permission.RECORD_AUDIO"
+      ]
+    },
+    "ios": {
+      "bundleIdentifier": "com.carenote.app",
+      "supportsTablet": false,
+      "infoPlist": {
+        "NSCameraUsageDescription": "CareNote butuh akses kamera buat ngambil foto bukti reminder."
+      }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "74d57ae6-8162-4d1f-9d74-088a2fc1df8f"
+      }
+    },
+    "owner": "nomssky",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/74d57ae6-8162-4d1f-9d74-088a2fc1df8f"
+    }
+  }
+}
