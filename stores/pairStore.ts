@@ -59,7 +59,7 @@ export const usePairStore = create<PairState>((set) => ({
     const channel = supabase
       .channel('pair-changes-' + Math.random())
       .on('postgres_changes', {
-        event: 'UPDATE',
+        event: '*',
         schema: 'public',
         table: 'pairs',
       }, () => onUpdate())

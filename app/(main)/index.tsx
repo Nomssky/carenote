@@ -27,17 +27,20 @@ export default function HomeScreen() {
   useEffect(() => { fetchPair() }, [])
 
   useEffect(() => {
+    const unsubPair = subscribePair(() => fetchPair())
+    const poll = setInterval(() => fetchPair(), 15000)
+    return () => { unsubPair(); clearInterval(poll) }
+  }, [])
+
+  useEffect(() => {
     if (!pair) return
 
     fetchTodayReminders(pair.id)
 
     const unsubConf = subscribeConfirmations(pair.id)
     const unsubRem = subscribeReminders(pair.id, () => fetchTodayReminders(pair.id))
-    const unsubPair = subscribePair(() => fetchPair())
 
-    const poll = setInterval(() => fetchPair(), 15000)
-
-    return () => { unsubConf(); unsubRem(); unsubPair(); clearInterval(poll) }
+    return () => { unsubConf(); unsubRem() }
   }, [pair])
 
   const myReminders = reminders.filter(r => r.target_user === profile?.id)

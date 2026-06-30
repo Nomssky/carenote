@@ -114,6 +114,7 @@ CREATE POLICY "confirmations_update" ON public.confirmations
 
 ALTER PUBLICATION supabase_realtime ADD TABLE public.confirmations;
 ALTER PUBLICATION supabase_realtime ADD TABLE public.reminders;
+ALTER PUBLICATION supabase_realtime ADD TABLE public.pairs;
 
 ALTER TABLE public.confirmations ADD CONSTRAINT confirmations_unique UNIQUE (reminder_id, date, user_id);
 
