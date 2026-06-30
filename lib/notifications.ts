@@ -3,23 +3,28 @@ import { supabase } from './supabase'
 
 const PROJECT_ID = '74d57ae6-8162-4d1f-9d74-088a2fc1df8f'
 
-let Notifications: any = null
-try {
-  Notifications = require('expo-notifications')
-
-  Notifications.setNotificationHandler({
-    handleNotification: async () => ({
-      shouldShowAlert: true,
-      shouldShowBanner: true,
-      shouldShowList: true,
-      shouldPlaySound: true,
-      shouldSetBadge: true,
-    }),
-  })
-} catch {}
+function tryLoadNotifications() {
+  try {
+    const Notifications = require('expo-notifications')
+    Notifications.setNotificationHandler({
+      handleNotification: async () => ({
+        shouldShowAlert: true,
+        shouldShowBanner: true,
+        shouldShowList: true,
+        shouldPlaySound: true,
+        shouldSetBadge: true,
+      }),
+    })
+    return Notifications
+  } catch {
+    return null
+  }
+}
 
 export async function registerForPushNotifications(): Promise<string | null> {
+  const Notifications = tryLoadNotifications()
   if (!Notifications) return null
+
   try {
     const { status: existingStatus } = await Notifications.getPermissionsAsync()
     let finalStatus = existingStatus
@@ -40,7 +45,23 @@ export async function registerForPushNotifications(): Promise<string | null> {
       })
     }
 
-    const token = (await Notifications.getExpoPushTokenAsync({ projectId: PROJECT_ID })).data
+    let token: string | null = null
+    try {
+      const r = await Notifications.getExpoPushTokenAsync({ projectId: PROJECT_ID })
+      token = r.data
+    } catch {
+      try {
+        const r = await Notifications.getExpoPushTokenAsync({ experienceId: '@nomssky/carenote' })
+        token = r.data
+      } catch {
+        try {
+          const r = await Notifications.getExpoPushTokenAsync()
+          token = r.data
+        } catch {}
+      }
+    }
+
+    if (!token) return null
 
     const { data: { user } } = await supabase.auth.getUser()
     if (user) {
@@ -57,6 +78,7 @@ export async function registerForPushNotifications(): Promise<string | null> {
 }
 
 export async function setupNotificationCategories() {
+  const Notifications = tryLoadNotifications()
   if (!Notifications) return
   try {
     await Notifications.setNotificationCategoryAsync('REMINDER_RESPONSE', [
