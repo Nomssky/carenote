@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { View, Text, TextInput, TouchableOpacity, Alert, Share, Platform, StyleSheet } from 'react-native'
 import { useRouter } from 'expo-router'
+import { supabase } from '../../lib/supabase'
 import { usePairStore } from '../../stores/pairStore'
 import { FONTS, RADIUS } from '../../constants/theme'
 import { useColors } from '../../hooks/useColors'
@@ -13,22 +14,37 @@ export default function PairScreen() {
   const [code, setCode] = useState('')
   const [myCode, setMyCode] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
-
-  useEffect(() => {
-    if (pair?.status === 'active') router.replace('/(main)/')
-  }, [pair])
+  const pairIdRef = useRef<string | null>(null)
 
   useEffect(() => {
     fetchPair()
-    const unsub = subscribePair(() => fetchPair())
-    const poll = setInterval(() => fetchPair(), 2000)
+    const unsub = subscribePair(() => {
+      fetchPair()
+      checkActive()
+    })
+    const poll = setInterval(() => {
+      fetchPair()
+      checkActive()
+    }, 2000)
     return () => { unsub(); clearInterval(poll) }
   }, [])
+
+  async function checkActive() {
+    if (!pairIdRef.current) return
+    const { data } = await supabase
+      .from('pairs')
+      .select('status')
+      .eq('id', pairIdRef.current)
+      .single()
+    if (data?.status === 'active') router.replace('/(main)/')
+  }
 
   async function handleCreate() {
     setLoading(true)
     try {
       const c = await createPair()
+      const p = usePairStore.getState().pair
+      if (p) pairIdRef.current = p.id
       setMyCode(c)
     } catch (e: any) {
       Alert.alert('Error', e.message)
