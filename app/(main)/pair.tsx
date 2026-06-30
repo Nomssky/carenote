@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { View, Text, TextInput, TouchableOpacity, Alert, Share, Platform, StyleSheet } from 'react-native'
 import { useRouter } from 'expo-router'
 import { usePairStore } from '../../stores/pairStore'
@@ -9,10 +9,20 @@ import RomanticBackground from '../../components/RomanticBackground'
 export default function PairScreen() {
   const { COLORS, SHADOW } = useColors()
   const router = useRouter()
-  const { createPair, joinPair } = usePairStore()
+  const { createPair, joinPair, pair, subscribePair, fetchPair } = usePairStore()
   const [code, setCode] = useState('')
   const [myCode, setMyCode] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    if (pair?.status === 'active') router.replace('/(main)/')
+  }, [pair])
+
+  useEffect(() => {
+    fetchPair()
+    const unsub = subscribePair(() => fetchPair())
+    return unsub
+  }, [])
 
   async function handleCreate() {
     setLoading(true)
