@@ -41,6 +41,8 @@ export default function RootLayout() {
 
   useEffect(() => {
     fetchProfile()
+    registerForPushNotifications().catch(() => {})
+    setupNotificationCategories().catch(() => {})
 
     const interval = setInterval(async () => {
       const { data: { user } } = await supabase.auth.getUser()
