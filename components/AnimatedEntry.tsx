@@ -1,4 +1,5 @@
 import { useEffect, type ReactNode } from 'react'
+import { View } from 'react-native'
 import { useNavigation } from 'expo-router'
 import Animated, { useSharedValue, useAnimatedStyle, withTiming, Easing } from 'react-native-reanimated'
 import { useColors } from '../hooks/useColors'
@@ -8,7 +9,7 @@ const EASE = Easing.out(Easing.cubic)
 export default function AnimatedEntry({ children }: { children: ReactNode }) {
   const { COLORS } = useColors()
   const navigation = useNavigation()
-  const translateY = useSharedValue(16)
+  const translateY = useSharedValue(20)
 
   useEffect(() => {
     if (navigation.isFocused()) {
@@ -27,8 +28,10 @@ export default function AnimatedEntry({ children }: { children: ReactNode }) {
   }))
 
   return (
-    <Animated.View style={[{ flex: 1, backgroundColor: COLORS.rosePale }, animStyle]}>
-      {children}
-    </Animated.View>
+    <View style={{ flex: 1, backgroundColor: COLORS.rosePale }}>
+      <Animated.View style={[{ flex: 1 }, animStyle]}>
+        {children}
+      </Animated.View>
+    </View>
   )
 }
