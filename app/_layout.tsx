@@ -47,7 +47,7 @@ export default function RootLayout() {
       if (user?.id) {
         await supabase.from('profiles').update({ last_seen: new Date().toISOString() }).eq('id', user.id)
       }
-    }, 10000)
+    }, 5000)
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, session) => {

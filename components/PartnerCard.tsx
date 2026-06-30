@@ -29,19 +29,19 @@ export default function PartnerCard({ partnerId }: Props) {
       if (!error && data) setPartner(data)
     }
     fetchProfile()
-    const poll = setInterval(fetchProfile, 5000)
+    const poll = setInterval(fetchProfile, 2000)
     return () => clearInterval(poll)
   }, [partnerId])
 
   useEffect(() => {
-    const t = setInterval(() => setNow(Date.now()), 5000)
+    const t = setInterval(() => setNow(Date.now()), 2000)
     return () => clearInterval(t)
   }, [])
 
   if (!partner) return null
 
   const diff = now - new Date(partner.last_seen ?? 0).getTime()
-  const isOnline = !!partner.last_seen && diff < 30000
+  const isOnline = !!partner.last_seen && diff < 10000
 
   return (
     <View style={[s.card, { backgroundColor: COLORS.ink }]}>
