@@ -16,13 +16,13 @@ export default function AnimatedEntry({ children }: { children: ReactNode }) {
     if (navigation.isFocused()) {
       const from = useTabStore.getState().dir === 'right' ? 60 : -60
       translateX.value = from
-      translateX.value = withTiming(0, { duration: 220, easing: EASE })
+      translateX.value = withTiming(0, { duration: 350, easing: EASE })
     }
 
     const unsub = navigation.addListener('focus', () => {
       const from = useTabStore.getState().dir === 'right' ? 60 : -60
       translateX.value = from
-      translateX.value = withTiming(0, { duration: 200, easing: EASE })
+      translateX.value = withTiming(0, { duration: 350, easing: EASE })
     })
     return unsub
   }, [navigation])
