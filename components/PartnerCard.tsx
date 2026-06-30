@@ -7,7 +7,7 @@ import { useColors } from '../hooks/useColors'
 import { FONTS } from '../constants/theme'
 import { supabase } from '../lib/supabase'
 
-type Props = { partnerId: string | undefined }
+type Props = { partnerId: string | undefined; online: boolean }
 
 function offlineText(lastSeen: string | null, now: number): string {
   if (!lastSeen) return 'Belum pernah online'
@@ -17,7 +17,7 @@ function offlineText(lastSeen: string | null, now: number): string {
   return `${formatDistanceToNow(parseISO(lastSeen), { locale: id })} yang lalu`
 }
 
-export default function PartnerCard({ partnerId }: Props) {
+export default function PartnerCard({ partnerId, online }: Props) {
   const { COLORS } = useColors()
   const [partner, setPartner] = useState<Profile | null>(null)
   const [now, setNow] = useState(Date.now())
@@ -29,26 +29,23 @@ export default function PartnerCard({ partnerId }: Props) {
       if (data) setPartner(data)
     }
     fetchProfile()
-    const poll = setInterval(fetchProfile, 5000)
+    const poll = setInterval(fetchProfile, 30000)
     return () => clearInterval(poll)
   }, [partnerId])
 
   useEffect(() => {
-    const t = setInterval(() => setNow(Date.now()), 5000)
+    const t = setInterval(() => setNow(Date.now()), 15000)
     return () => clearInterval(t)
   }, [])
 
   if (!partner) return null
 
-  const diff = now - new Date(partner.last_seen ?? 0).getTime()
-  const isOnline = !!partner.last_seen && diff < 60000
-
   return (
     <View style={[s.card, { backgroundColor: COLORS.ink }]}>
-      <View style={[s.dot, { backgroundColor: isOnline ? COLORS.green : COLORS.muted }]} />
+      <View style={[s.dot, { backgroundColor: online ? COLORS.green : COLORS.muted }]} />
       <View style={{ flex: 1 }}>
         <Text style={[s.name, { color: COLORS.white }]}>{partner.name} 🌸</Text>
-        {isOnline ? (
+        {online ? (
           <Text style={[s.status, { color: COLORS.green }]}>online</Text>
         ) : (
           <Text style={[s.status, { color: COLORS.muted }]}>

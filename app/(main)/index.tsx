@@ -13,6 +13,7 @@ import { FONTS, SPACING } from '../../constants/theme'
 import { useColors } from '../../hooks/useColors'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import RomanticBackground from '../../components/RomanticBackground'
+import { usePresence } from '../../hooks/usePresence'
 
 export default function HomeScreen() {
   const { COLORS, SHADOW } = useColors()
@@ -21,8 +22,9 @@ export default function HomeScreen() {
   const insets = useSafeAreaInsets()
   const fabScale = useSharedValue(1)
   const fabAnim = useAnimatedStyle(() => ({ transform: [{ scale: fabScale.value }] }))
-  const { pair, partner, fetchPair, subscribePair, subscribePartner, setPartner } = usePairStore()
+  const { pair, partner, fetchPair, subscribePair } = usePairStore()
   const { reminders, loading, fetchTodayReminders, subscribeConfirmations, subscribeReminders } = useReminderStore()
+  const partnerOnline = usePresence(pair?.id ?? null, profile?.id)
 
   useEffect(() => { fetchPair() }, [])
 
@@ -42,14 +44,6 @@ export default function HomeScreen() {
 
     return () => { unsubConf(); unsubRem() }
   }, [pair])
-
-  useEffect(() => {
-    if (!partner?.id) return
-    const unsub = subscribePartner(partner.id, () => {
-      usePairStore.getState().fetchPair()
-    })
-    return unsub
-  }, [partner?.id])
 
   const myReminders = reminders.filter(r => r.target_user === profile?.id)
   const theirReminders = reminders.filter(r => r.created_by === profile?.id && r.target_user !== profile?.id)
@@ -94,7 +88,7 @@ export default function HomeScreen() {
         </View>
 
         <View style={s.partnerWrap}>
-          <PartnerCard partnerId={partner?.id} />
+          <PartnerCard partnerId={partner?.id} online={partnerOnline} />
         </View>
 
         {myReminders.length > 0 && (
