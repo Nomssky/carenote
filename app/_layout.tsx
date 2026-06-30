@@ -42,9 +42,11 @@ export default function RootLayout() {
   useEffect(() => {
     fetchProfile()
 
-    const interval = setInterval(() => {
-      const u = useAuthStore.getState().user
-      if (u?.id) void supabase.from('profiles').update({ last_seen: new Date().toISOString() }).eq('id', u.id)
+    const interval = setInterval(async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user?.id) {
+        await supabase.from('profiles').update({ last_seen: new Date().toISOString() }).eq('id', user.id)
+      }
     }, 10000)
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(

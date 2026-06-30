@@ -13,7 +13,6 @@ import { FONTS, SPACING } from '../../constants/theme'
 import { useColors } from '../../hooks/useColors'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import RomanticBackground from '../../components/RomanticBackground'
-import { usePresence } from '../../hooks/usePresence'
 
 export default function HomeScreen() {
   const { COLORS, SHADOW } = useColors()
@@ -24,7 +23,6 @@ export default function HomeScreen() {
   const fabAnim = useAnimatedStyle(() => ({ transform: [{ scale: fabScale.value }] }))
   const { pair, partner, fetchPair, subscribePair } = usePairStore()
   const { reminders, loading, fetchTodayReminders, subscribeConfirmations, subscribeReminders } = useReminderStore()
-  const partnerOnline = usePresence(pair?.id ?? null, profile?.id)
 
   useEffect(() => { fetchPair() }, [])
 
@@ -88,7 +86,7 @@ export default function HomeScreen() {
         </View>
 
         <View style={s.partnerWrap}>
-          <PartnerCard partnerId={partner?.id} online={partnerOnline} />
+          <PartnerCard partnerId={partner?.id} />
         </View>
 
         {myReminders.length > 0 && (
