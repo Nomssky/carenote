@@ -22,12 +22,14 @@ export const usePairStore = create<PairState>((set) => ({
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
 
-    const { data: pair } = await supabase
+    const { data: pairs } = await supabase
       .from('pairs')
       .select('*')
       .or(`user_a.eq.${user.id},user_b.eq.${user.id}`)
       .eq('status', 'active')
-      .single()
+      .limit(1)
+
+    const pair = pairs?.[0] ?? null
 
     if (!pair) return set({ pair: null, partner: null, loading: false })
 
@@ -44,6 +46,12 @@ export const usePairStore = create<PairState>((set) => ({
   createPair: async () => {
     const { data: { user } } = await supabase.auth.getUser()
     const code = Math.random().toString(36).substring(2, 8).toUpperCase()
+
+    await supabase
+      .from('pairs')
+      .update({ status: 'inactive' })
+      .or(`user_a.eq.${user!.id},user_b.eq.${user!.id}`)
+      .eq('status', 'active')
 
     const { data } = await supabase
       .from('pairs')

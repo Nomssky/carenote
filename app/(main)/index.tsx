@@ -28,7 +28,7 @@ export default function HomeScreen() {
 
   useEffect(() => {
     const unsubPair = subscribePair(() => fetchPair())
-    const poll = setInterval(() => fetchPair(), 15000)
+    const poll = setInterval(() => fetchPair(), 3000)
     return () => { unsubPair(); clearInterval(poll) }
   }, [])
 

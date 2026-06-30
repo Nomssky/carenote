@@ -11,7 +11,7 @@ CREATE TABLE public.pairs (
   user_a       uuid NOT NULL REFERENCES public.profiles(id),
   user_b       uuid REFERENCES public.profiles(id),
   pair_code    text UNIQUE NOT NULL,
-  status       text DEFAULT 'pending' CHECK (status IN ('pending', 'active')),
+  status       text DEFAULT 'pending' CHECK (status IN ('pending', 'active', 'inactive')),
   created_at   timestamptz DEFAULT now()
 );
 
