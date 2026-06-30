@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from 'react'
-import { Tabs, useSegments } from 'expo-router'
+import { useEffect, useState } from 'react'
+import { Tabs } from 'expo-router'
 import { View, Text, TextInput, TouchableOpacity, Alert, Share, Platform, StyleSheet } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Animated, { useSharedValue, useAnimatedStyle, withTiming, Easing } from 'react-native-reanimated'
@@ -7,7 +7,6 @@ import { supabase } from '../../lib/supabase'
 import { useColors } from '../../hooks/useColors'
 import { usePairStore } from '../../stores/pairStore'
 import { useAuthStore } from '../../stores/authStore'
-import { useTabStore } from '../../stores/tabStore'
 import { FONTS, RADIUS } from '../../constants/theme'
 import RomanticBackground from '../../components/RomanticBackground'
 
@@ -30,8 +29,6 @@ function TabIcon({ emoji, focused }: { emoji: string; focused: boolean }) {
 export default function MainLayout() {
   const { COLORS, SHADOW } = useColors()
   const insets = useSafeAreaInsets()
-  const segments = useSegments()
-  const prevTab = useRef(segments[0])
   const { pair, fetchPair, createPair, joinPair, subscribePair } = usePairStore()
   const { profile } = useAuthStore()
   const [code, setCode] = useState('')
@@ -52,17 +49,6 @@ export default function MainLayout() {
     }, 2000)
     return () => { unsub(); clearInterval(poll) }
   }, [])
-
-  useEffect(() => {
-    if (!segments[0]) return
-    const tabs = ['index', 'create', 'history', 'gallery', 'settings']
-    const prevIdx = tabs.indexOf(prevTab.current ?? '')
-    const currIdx = tabs.indexOf(segments[0])
-    if (prevIdx !== -1 && currIdx !== -1 && currIdx !== prevIdx) {
-      useTabStore.getState().setDir(currIdx > prevIdx ? 'right' : 'left')
-    }
-    prevTab.current = segments[0]
-  }, [segments])
 
   useEffect(() => {
     if (pair?.status === 'pending' && pair?.user_a === profile?.id) {
