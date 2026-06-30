@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Tabs } from 'expo-router'
 import { View, Text, TextInput, TouchableOpacity, Alert, Share, Platform, StyleSheet } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated'
+import Animated, { useSharedValue, useAnimatedStyle, withTiming, Easing } from 'react-native-reanimated'
 import { supabase } from '../../lib/supabase'
 import { useColors } from '../../hooks/useColors'
 import { usePairStore } from '../../stores/pairStore'
@@ -11,28 +11,16 @@ import { FONTS, RADIUS } from '../../constants/theme'
 import RomanticBackground from '../../components/RomanticBackground'
 
 function TabIcon({ emoji, focused }: { emoji: string; focused: boolean }) {
-  const scale = useSharedValue(focused ? 1 : 0.85)
+  const opacity = useSharedValue(focused ? 1 : 0.5)
 
   useEffect(() => {
-    scale.value = withSpring(focused ? 1 : 0.85, { damping: 6, stiffness: 140, mass: 0.5 })
+    opacity.value = withTiming(focused ? 1 : 0.5, { duration: 250, easing: Easing.out(Easing.cubic) })
   }, [focused])
 
-  const animStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-  }))
-
-  const translateY = useSharedValue(focused ? -2 : 0)
-
-  useEffect(() => {
-    translateY.value = withSpring(focused ? -2 : 0, { damping: 6, stiffness: 140, mass: 0.5 })
-  }, [focused])
-
-  const yStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: translateY.value }],
-  }))
+  const animStyle = useAnimatedStyle(() => ({ opacity: opacity.value }))
 
   return (
-    <Animated.View style={[animStyle, yStyle]}>
+    <Animated.View style={animStyle}>
       <Text style={{ fontSize: 22 }}>{emoji}</Text>
     </Animated.View>
   )
