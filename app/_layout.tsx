@@ -41,8 +41,6 @@ export default function RootLayout() {
 
   useEffect(() => {
     fetchProfile()
-    registerForPushNotifications().catch(() => {})
-    setupNotificationCategories().catch(() => {})
 
     const interval = setInterval(async () => {
       const { data: { user } } = await supabase.auth.getUser()
@@ -63,6 +61,13 @@ export default function RootLayout() {
 
     return () => { subscription.unsubscribe(); clearInterval(interval) }
   }, [])
+
+  useEffect(() => {
+    if (user) {
+      registerForPushNotifications().catch(() => {})
+      setupNotificationCategories().catch(() => {})
+    }
+  }, [user])
 
   useEffect(() => {
     if (!fontsLoaded) return

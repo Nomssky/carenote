@@ -14,7 +14,7 @@ serve(async () => {
 
   const { data: reminders, error } = await supabase
     .from('reminders')
-    .select('id, message, emoji, type, target_user, created_by')
+    .select('id, message, emoji, type, created_by, target_user')
     .eq('is_active', true)
     .eq('remind_time', currentTime)
     .contains('repeat_days', [currentDay])
@@ -22,7 +22,8 @@ serve(async () => {
   if (error) return new Response(JSON.stringify({ error }), { status: 500 })
   if (!reminders?.length) return new Response('no reminders', { status: 200 })
 
-  const userIds = [...new Set(reminders.map(r => r.target_user))]
+  const userIds = [...new Set(reminders.flatMap(r => [r.created_by, r.target_user]))]
+
   const { data: profiles } = await supabase
     .from('profiles')
     .select('id, name, push_token')
@@ -30,29 +31,34 @@ serve(async () => {
 
   const profileMap = new Map(profiles?.map(p => [p.id, p]) ?? [])
 
-  const creatorIds = [...new Set(reminders.map(r => r.created_by))]
-  const { data: creators } = await supabase
-    .from('profiles')
-    .select('id, name')
-    .in('id', creatorIds)
+  const pushMessages = reminders.flatMap(r => {
+    const toSend: any[] = []
+    const creator = profileMap.get(r.created_by)
 
-  const creatorMap = new Map(creators?.map(c => [c.id, c]) ?? [])
-
-  const pushMessages = reminders
-    .map(r => {
-      const target = profileMap.get(r.target_user)
-      const creator = creatorMap.get(r.created_by)
-      if (!target?.push_token) return null
-      return {
+    const target = profileMap.get(r.target_user)
+    if (target?.push_token) {
+      toSend.push({
         to: target.push_token,
         title: `Dari ${creator?.name ?? 'Dia'} ${r.emoji}`,
         body: r.message,
         data: { reminder_id: r.id },
         categoryIdentifier: 'REMINDER_RESPONSE',
         sound: 'default',
-      }
-    })
-    .filter(Boolean)
+      })
+    }
+
+    if (creator?.push_token && creator.id !== r.target_user) {
+      toSend.push({
+        to: creator.push_token,
+        title: `Ngingetin ${target?.name ?? 'Dia'} ${r.emoji}`,
+        body: `"${r.message}" — tunggu responnya ya`,
+        data: { reminder_id: r.id },
+        sound: 'default',
+      })
+    }
+
+    return toSend
+  })
 
   if (pushMessages.length > 0) {
     await fetch('https://exp.host/--/api/v2/push/send', {
