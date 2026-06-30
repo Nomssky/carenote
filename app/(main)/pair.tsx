@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback } from 'react'
 import { View, Text, TextInput, TouchableOpacity, Alert, Share, Platform, StyleSheet } from 'react-native'
 import { useRouter, useFocusEffect } from 'expo-router'
 import { supabase } from '../../lib/supabase'
@@ -14,39 +14,35 @@ export default function PairScreen() {
   const { createPair, joinPair, pair, subscribePair, fetchPair } = usePairStore()
   const { profile } = useAuthStore()
   const [code, setCode] = useState('')
-  const [myCode, setMyCode] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const pairIdRef = useRef<string | null>(null)
+  const isPolling = useRef(false)
 
   useFocusEffect(
     useCallback(() => {
-      setMyCode(null)
-      pairIdRef.current = null
-      fetchPair()
+      fetchPair().then(() => {
+        const current = usePairStore.getState().pair
+        if (current?.id) pairIdRef.current = current.id
+      })
+
+      if (isPolling.current) return
+      isPolling.current = true
 
       const unsub = subscribePair(() => {
         fetchPair()
-        checkActive()
+        if (pairIdRef.current) checkActive()
       })
       const poll = setInterval(() => {
         fetchPair()
-        checkActive()
+        if (pairIdRef.current) checkActive()
       }, 2000)
 
-      return () => { unsub(); clearInterval(poll) }
+      return () => { isPolling.current = false; unsub(); clearInterval(poll) }
     }, [])
   )
 
-  useEffect(() => {
-    if (pair?.status === 'active') router.replace('/(main)/')
-  }, [pair])
-
-  useEffect(() => {
-    if (pair?.status === 'pending' && pair?.user_a === profile?.id) {
-      setMyCode(pair.pair_code)
-      pairIdRef.current = pair.id
-    }
-  }, [pair, profile])
+  const isCreator = pair?.status === 'pending' && pair?.user_a === profile?.id
+  const showCode = isCreator && pair?.pair_code
 
   async function checkActive() {
     if (!pairIdRef.current) return
@@ -64,7 +60,6 @@ export default function PairScreen() {
       const c = await createPair()
       const p = usePairStore.getState().pair
       if (p) pairIdRef.current = p.id
-      setMyCode(c)
     } catch (e: any) {
       Alert.alert('Error', e.message)
     } finally {
@@ -86,7 +81,7 @@ export default function PairScreen() {
   }
 
   async function handleShare() {
-    const text = `Pakai kode ini di CareNote: ${myCode} 💌`
+    const text = `Pakai kode ini di CareNote: ${pair?.pair_code} 💌`
     if (Platform.OS === 'web') {
       try {
         await navigator.clipboard.writeText(text)
@@ -103,7 +98,7 @@ export default function PairScreen() {
       <Text style={[s.heading, { color: COLORS.ink }]}>Terhubung 💌</Text>
       <Text style={[s.subheading, { color: COLORS.muted }]}>Bagikan kode ke dia, atau masukkan kode dari dia</Text>
 
-      {!myCode ? (
+      {!showCode ? (
         <TouchableOpacity
           style={[s.createBtn, { backgroundColor: COLORS.ink }, loading && { opacity: 0.7 }]}
           onPress={handleCreate}
@@ -121,7 +116,7 @@ export default function PairScreen() {
           activeOpacity={0.85}
         >
           <Text style={s.codeLabel}>Kode kamu</Text>
-          <Text style={s.codeValue}>{myCode}</Text>
+          <Text style={s.codeValue}>{pair?.pair_code}</Text>
           <Text style={s.codeHint}>Tap untuk bagikan</Text>
         </TouchableOpacity>
       )}
